@@ -1,4 +1,4 @@
-let  Cadastro = require('../model/Cadastro');
+let  Cadastros = require('../model/Cadastro');
 const date = new Date();
 const CadastroController = {
     async criar(req, res) {
@@ -18,22 +18,22 @@ const CadastroController = {
 
           }
        
-        const novoCadastro = {
-            id: Cadastros[Cadastros.length-1]?.id ? Cadastros[Cadastros.length-1]?.id+1 : 1,
-            nome: nome,
-           preco: preco,
-           quantidade:quantidade,
-           descricao:descricao,
-           mensagem: mensagem,
-            img: imgUrl,
-        }
-        let sql = `INSERT INTO posts (nome, mensagem, img, user_id)VALUES(?,?,?,?)`
+        // const novoCadastro = {
+        //     id: Cadastros[Cadastros.length-1]?.id ? Cadastros[Cadastros.length-1]?.id+1 : 1,
+        //     nome: nome,
+        //    preco: preco,
+        //    quantidade:quantidade,
+        //    descricao:descricao,
+        //    mensagem: mensagem,
+        //     img: imgUrl,
+        // }
+        let sql = `INSERT INTO anuncios (nome, mensagem, img, user_id)VALUES(?,?,?,?)`
         const result = await pool.query(sql,[nome, mensagem,preco, quantidade,descricao, imgUrl, 1])
         const insertId = result[0]?.insertId;
         if(!insertId){
             return res.status(401).json({message: 'erro ao criar postagem!'})
         }
-        const sql_select = `SELECT * from posts where id = ?`
+        const sql_select = `SELECT * from anuncios where id = ?`
         const [rows] = await pool.query(sql_select, [insertId])
         Cadastros.push(novoCadastro);
         return res.status(201).json(novoCadastro)
@@ -78,14 +78,14 @@ const CadastroController = {
         
         //salvar as alteraçoes
 
-        let sql = "UPDATE posts SET nome = ?, mensagem = ?, img = ? WHERE id = ?"
+        let sql = "UPDATE anuncios SET nome = ?, mensagem = ?, img = ? WHERE id = ?"
         const result = await pool.query(sql, [nome, mensagem, imgUrl,Number(paramId)])
         const changedRows = result[0]?.changedRows;
     
         if(!changedRows){
             return res.status(401).json({message: 'erro ao alterar postagem!'})
         }
-        const sql_select = `SELECT * from posts where id = ?`
+        const sql_select = `SELECT * from anuncios where id = ?`
         const [rows] = await pool.query(sql_select, [insertId])
         return res.status(201).json(rows[0])
 

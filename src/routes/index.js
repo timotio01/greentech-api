@@ -4,7 +4,8 @@ const cadastroController = require('../controller/CadastroController');
 const multer = require('multer');
 
 const router = express.Router();
-const crypto = require('crypto')
+const crypto = require('crypto');
+const FaleConoscoController = require('../controller/FaleConoscoController');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -46,7 +47,7 @@ router.get('/cadastros/:id', cadastroController.show);
 
 router.delete('/cadastros/:id', cadastroController.deletar);
 
-
+router.post('/faleConosco', upload.single('file'), FaleConoscoController.criar );
 
 
 

@@ -1,5 +1,5 @@
-const usuarios = require('../model/Usuario');
-let  Usuarios = require('../model/Usuario');
+let Usuarios = require('../model/Usuario');
+const pool = require('../database/mysql');
 // const date = new Date();
 const UsuarioController = {
     async criar(req, res) {
