@@ -1,3 +1,3 @@
-let anuncio = [];
+let anuncios = [];
 
-module.exports = anuncio;
+module.exports = anuncios;

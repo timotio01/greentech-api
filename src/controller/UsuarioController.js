@@ -4,17 +4,24 @@ const pool = require('../database/mysql');
 const UsuarioController = {
    
     async criar(req, res) {
+         console.log(req.body)
+         const {email, senha, nome, endereco, bairro, cidade, uf, cep} = req.body;
          
-         const {NOME, BAIRRO, ENDERECO, CIDADE, CEP, TELEFONE, UF} = req.body;
          
-         
-         let sql = `INSERT INTO usuarios (NOME, BAIRRO, ENDERECO, CIDADE, CEP, TELEFONE, UF) VALUES (?,?,?,?,?,?,?)`
-         const result = await pool.query(sql, [NOME, BAIRRO, ENDERECO, CIDADE, CEP, TELEFONE, UF, 1])
+         let sql = `INSERT INTO usuarios (nome, endereco, bairro, cidade, uf, cep) VALUES (?,?,?,?,?,?)`
+         const result = await pool.query(sql, [nome, endereco, bairro, cidade, uf, cep])
          const insertId = result[0]?.insertId;
          if(!insertId) {
              return res.status(401).json({message: 'erro ao criar usuario!'})
          }
-         
+
+         //has da senha
+         let sql_login = `INSERT INTO login (usuarios_usuario_id, email, senha) VALUES (?,?,?)`
+         const result_login = await pool.query(sql_login, [insertId, email, senha])
+         const insertId_login = result[0]?.insertId;
+         if(!insertId_login) {
+             return res.status(401).json({message: 'erro ao criar usuario!'})
+         }
          const sql_select = `SELECT * from usuarios where USUARIO_ID = ?`
          const [rows] =await pool.query(sql_select, [insertId])
          return res.status(201).json(rows[0])

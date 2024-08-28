@@ -6,11 +6,11 @@ const ProdutoController = {
 
     async criar(req, res) {
         // console.log(req.body)
-        const {NOME, MARCA, ESTADO_USO, DESCRICAO, DATA, PRECO, usuarios_id} = req.body;
+        const {nome, marca, estado_uso, descricao, data, preco, usuarios_id} = req.body;
       
 
-        let sql = `INSERT INTO produtos (NOME, MARCA, ESTADO_USO, DESCRICAO, DATA, PRECO, usuarios_id) VALUES(?,?,?,?,?,?,?)`
-        const result = await pool.query(sql,[NOME, MARCA, ESTADO_USO, DESCRICAO, DATA, PRECO, usuarios_id, 1])
+        let sql = `INSERT INTO produtos (nome, marca, estado_uso, descricao, data, preco, usuarios_id) VALUES(?,?,?,?,?,?,?)`
+        const result = await pool.query(sql,[nome, marca, estado_uso, descricao, data, preco, usuarios_id])
         const insertId = result[0]?.insertId;
         if(!insertId){
             return res.status(401).json({message: 'erro ao criar produto!'})
