@@ -1,5 +1,6 @@
 let Usuarios = require('../model/Usuario');
 const pool = require('../database/mysql');
+const bcrypt = require('bcrypt');
 // const date = new Date();
 const UsuarioController = {
    
@@ -7,21 +8,26 @@ const UsuarioController = {
          console.log(req.body)
          const {email, senha, nome, endereco, bairro, cidade, uf, cep} = req.body;
          
+         const sql_select_existe = `SELECT * from login where email = ?`
+        const [result_existe] = await pool.query(sql_select_existe, [email])
+        console.log([result_existe])
+        // if(result_existe[0] && result_existe[0].length > 0)
+        //     return res.status(401).json({message: 'Erro ao criar usuario'})
          
          let sql = `INSERT INTO usuarios (nome, endereco, bairro, cidade, uf, cep) VALUES (?,?,?,?,?,?)`
          const result = await pool.query(sql, [nome, endereco, bairro, cidade, uf, cep])
          const insertId = result[0]?.insertId;
          if(!insertId) {
-             return res.status(401).json({message: 'erro ao criar usuario!'})
+             return res.status(400).json({message: 'erro ao criar usuario!'})
          }
 
-         //has da senha
+         //criptografa o password
+        const salt = await bcrypt.genSalt(10);
+        const hashSenha = await bcrypt.hash(String(senha), salt);
+
          let sql_login = `INSERT INTO login (usuarios_usuario_id, email, senha) VALUES (?,?,?)`
-         const result_login = await pool.query(sql_login, [insertId, email, senha])
-         const insertId_login = result[0]?.insertId;
-         if(!insertId_login) {
-             return res.status(401).json({message: 'erro ao criar usuario!'})
-         }
+         const result_login = await pool.query(sql_login, [insertId, email, hashSenha])
+         
          const sql_select = `SELECT * from usuarios where USUARIO_ID = ?`
          const [rows] =await pool.query(sql_select, [insertId])
          return res.status(201).json(rows[0])

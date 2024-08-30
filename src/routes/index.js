@@ -8,6 +8,7 @@ const multer = require('multer');
 
 const router = express.Router();
 const crypto = require('crypto');
+const AuthController = require('../controller/AuthController');
 
 
 const storage = multer.diskStorage({
@@ -57,15 +58,16 @@ router.delete('/produtos/:id', produtoController.deletar)
 router.post('/faleConosco', upload.single('file'), FaleConoscoController.criar );
 
 
-// router.get('/anuncios', AnuncioController.listar)
+router.get('/anuncios', AnuncioController.listar)
 
 router.post('/anuncios', upload.single('img'), AnuncioController.criar)
 
 // router.put('/anuncios/:id', upload.single('img'), AnuncioController.alterar)
 
-// router.get('/anuncios/:id', AnuncioController.show)
+router.get('/anuncios/:id', AnuncioController.show)
 
 // router.delete('/anuncios/:id', AnuncioController.deletar)
 
+router.post('/login', AuthController.login)
 
 module.exports = router;

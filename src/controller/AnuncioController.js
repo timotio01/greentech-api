@@ -15,13 +15,26 @@ const AnuncioController = {
              return res.status(401).json({message: 'erro ao criar anuncio!'})
          }
          
-         const sql_select = `SELECT * from anuncios where anuncio_ID = ?`
+         const sql_select = `SELECT * from anuncios where anuncio_id = ?`
          const [rows] =await pool.query(sql_select, [insertId])
          return res.status(201).json(rows[0])
     
 
-        }
-    }
+     },
+     async listar(req, res) {
+        let sql = "select * from anuncios";
+        const [rows] = await pool.query(sql);
+
+        return res.status(200).json(rows);
+    },
+    async show(req, res) {
+        const paramId = req.params.id;
+        const sql_select = `SELECT * from anuncios where anuncio_id = ?`
+        const [rows] =await pool.query(sql_select, [Number(paramId)])
+        return res.status(201).json(rows[0])
+        
+    },
+}
         
     module.exports = AnuncioController;
     
