@@ -1,10 +1,15 @@
 const express = require('express');
 const usuarioController = require('../controller/UsuarioController');
-const cadastroController = require('../controller/CadastroController');
+const produtoController = require('../controller/ProdutoController');
+const FaleConoscoController = require('../controller/FaleConoscoController');
+const AnuncioController = require('../controller/AnuncioController')
+
 const multer = require('multer');
 
 const router = express.Router();
-const crypto = require('crypto')
+const crypto = require('crypto');
+const AuthController = require('../controller/AuthController');
+
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -36,18 +41,33 @@ router.get('/usuarios/:id', usuarioController.show);
 
 router.delete('/usuarios/:id', usuarioController.deletar);
 
-router.get('/cadastros', cadastroController.listar);
-
-router.post('/cadastros', upload.single('img'), cadastroController.criar)
-
-router.put('/cadastros/:id', upload.single('img'), cadastroController.alterar)
-
-router.get('/cadastros/:id', cadastroController.show);
-
-router.delete('/cadastros/:id', cadastroController.deletar);
 
 
+router.get('/produtos', produtoController.listar)
+
+router.post('/produtos', upload.single('img'), produtoController.criar)
+
+router.put('/produtos/:id', upload.single('img'), produtoController.alterar)
+
+router.get('/produtos/:id', produtoController.show)
+
+router.delete('/produtos/:id', produtoController.deletar)
 
 
+
+router.post('/faleConosco', upload.single('file'), FaleConoscoController.criar );
+
+
+router.get('/anuncios', AnuncioController.listar)
+
+router.post('/anuncios', upload.single('img'), AnuncioController.criar)
+
+// router.put('/anuncios/:id', upload.single('img'), AnuncioController.alterar)
+
+router.get('/anuncios/:id', AnuncioController.show)
+
+// router.delete('/anuncios/:id', AnuncioController.deletar)
+
+router.post('/login', AuthController.login)
 
 module.exports = router;

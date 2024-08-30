@@ -1,89 +1,81 @@
-const usuarios = require('../model/Usuario');
-let  Usuarios = require('../model/Usuario');
+let Usuarios = require('../model/Usuario');
+const pool = require('../database/mysql');
+const bcrypt = require('bcrypt');
 // const date = new Date();
 const UsuarioController = {
+   
     async criar(req, res) {
-        const {nomeCompleto, email, senha, rg, cpf, genero, endereco, bairro, numero, estado, cidade, complemento, dataNasc } = req.body;
-       
-        const novoUsuario = {
-            id: Usuarios[Usuarios.length-1]?.id ? Usuarios[Usuarios.length-1]?.id+1 : 1,
-            nomeCompleto:nomeCompleto,
-            email:email,
-            senha:senha,
-            rg:rg,
-            cpf:cpf,
-            genero:genero,
-            endereco:endereco,
-            bairro:bairro,
-            numero:numero,
-            estado:estado,
-            cidade:cidade,
-            complemento:complemento,
-            dataNasc:dataNasc,
+         console.log(req.body)
+         const {email, senha, nome, endereco, bairro, cidade, uf, cep} = req.body;
+         
+         const sql_select_existe = `SELECT * from login where email = ?`
+        const [result_existe] = await pool.query(sql_select_existe, [email])
+        console.log([result_existe])
+        // if(result_existe[0] && result_existe[0].length > 0)
+        //     return res.status(401).json({message: 'Erro ao criar usuario'})
+         
+         let sql = `INSERT INTO usuarios (nome, endereco, bairro, cidade, uf, cep) VALUES (?,?,?,?,?,?)`
+         const result = await pool.query(sql, [nome, endereco, bairro, cidade, uf, cep])
+         const insertId = result[0]?.insertId;
+         if(!insertId) {
+             return res.status(400).json({message: 'erro ao criar usuario!'})
+         }
 
+         //criptografa o password
+        const salt = await bcrypt.genSalt(10);
+        const hashSenha = await bcrypt.hash(String(senha), salt);
 
-
-        }
-        Usuarios.push(novoUsuario);
-        return res.status(201).json(novoUsuario)
+         let sql_login = `INSERT INTO login (usuarios_usuario_id, email, senha) VALUES (?,?,?)`
+         const result_login = await pool.query(sql_login, [insertId, email, hashSenha])
+         
+         const sql_select = `SELECT * from usuarios where USUARIO_ID = ?`
+         const [rows] =await pool.query(sql_select, [insertId])
+         return res.status(201).json(rows[0])
     },
     async listar(req, res) {
-        return res.status(200).json(Usuarios);
-       
+        let sql = "select * from usuarios";
+        const [rows] = await pool.query(sql);
+
+        return res.status(200).json(rows);
     },
-    async alterar(req, res){
-        //pegar o id via parametro da url de requisiçao
-        const paramId = req.params.id;
-        // return res.status(201).json({id: paramId});
-        const {nomeCompleto, email, senha, rg, cpf, genero, endereco, bairro, numero, estado, cidade,complemento, dataNasc} = req.body;
-        
-        const usuario = Usuarios.find(usuario => usuario.id === parseInt(paramId) ? true : false);
-        const usuarioIndex = Usuarios.findIndex(usuario => usuario.id === parseInt(paramId))
-       
-        
-        //return res.status(201).json(post);
-        //alterar as informaçoes
-        usuario.nomeCompleto = nomeCompleto;
-        usuario.email = email;
-        usuario.senha = senha;
-        usuario.rg = rg;
-        usuario.estado = estado;
-        usuario.cpf = cpf;
-        usuario.senha = senha;
-        usuario.genero = genero;
-        usuario.endereco = endereco;
-        usuario.cidade = cidade;
-        usuario.estado = estado;
-        usuario.bairro = bairro;
-        usuario.numero = numero;
-        usuario.dataNasc = dataNasc;
-        usuario.complemento = complemento;
 
-        
-       
-
-        //salvar as alteraçoes
-
-        Usuarios[usuarioIndex] = usuario;
-
-        return res.status(201).json(usuario);
-    },
     async show(req, res) {
         const paramId = req.params.id;
-        const usuario = usuarios.find(usuario => usuario.id === parseInt(paramId) ? true : false);
-        return res.status(201).json(usuario);
+        const sql_select = `SELECT * from usuarios where usuario_id = ?`
+        const [rows] =await pool.query(sql_select, [Number(paramId)])
+        return res.status(201).json(rows[0])
+        
     },
+
+
     async deletar(req, res) {
         const paramId = req.params.id;
-        const usuarioIndex = Usuarios.findIndex(usuario => usuario.id === parseInt(paramId))
+        let sql = `DELETE from usuarios WHERE USUARIO_ID = ?`
+        const result = await pool.query(sql, [Number(paramId)])
+        const affectedRows = result[0]?.affectedRows;
+        if(!affectedRows) {
+            return res.status(401).json({message: 'erro ao deletar usuario!'})
+        }
+        return res.status(200).json({mensagem: "Usuario deletado com sucesso!"})
+    },
 
-        Usuarios = [
-            ...Usuarios.slice(0, usuarioIndex),
-            ...Usuarios.slice(usuarioIndex+1, Usuarios.length)
-            ]
+    async alterar(req, res) {
+        //pegar o id via parametro da url de requisicao
+        const paramId = req.params.id;
+        //return res.status(201).json({id: paramId});
+        //pegou os valores do form via body
+        const {NOME, BAIRRO, ENDERECO, CIDADE, CEP, TELEFONE, UF} = req.body;
         
-        return res.status(200).json({Usuario: "Usuario deletado com sucesso!"})
+        let sql = "UPDATE usuarios SET NOME = ?, BAIRRO = ?, ENDERECO = ?, CIDADE = ?, CEP = ?, TELEFONE = ?, UF = ? WHERE USUARIO_ID = ?"
+        const result = await pool.query(sql, [NOME, BAIRRO, ENDERECO, CIDADE, CEP, TELEFONE, UF, Number(paramId)])
+        const changedRows = result[0]?.changedRows;
+        if(!changedRows) {
+            return res.status(401).json({message: 'erro ao alterar postagem!'})
+        }
+        const sql_select = `SELECT * from usuarios where usuario_id = ?`
+        const [rows] =await pool.query(sql_select, [paramId])
+        return res.status(201).json(rows[0])      
+    },
 
-    }
 }
 module.exports = UsuarioController;
